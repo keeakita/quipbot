@@ -4,7 +4,7 @@ require 'watir'
 require 'pry'
 
 username = 'QUIPBOT'
-room = 'QTKR'
+room = 'TYPE'
 
 browser = Watir::Browser.new :firefox
 browser.goto('http://jackbox.tv')
@@ -47,6 +47,29 @@ game_id = browser.execute_script('return window.localStorage.getItem(\'blobcast-
 uuid_file = File.new('.game_uuid', 'w')
 uuid_file.write(game_id)
 uuid_file.close
+
+# Main event loop
+while true
+
+  # Check for a prompt
+  if browser.text_field(id: 'quiplash-answer-input').present?
+    prompt = browser.element(id: 'question-text').text
+    puts "Got prompt: #{prompt}"
+
+    browser.text_field(id: 'quiplash-answer-input').set(Time.now.to_s)
+    browser.button(id: 'quiplash-submit-answer').click()
+  end
+
+  # Check for a vote
+  if browser.element(class: 'quiplash-vote-button').present?
+    elements = browser.elements(class: 'quiplash-vote-button')
+    choice = (rand * elements.length).to_i
+    puts "Voting for choice #{choice}"
+    elements[choice].click
+  end
+
+  sleep 5
+end
 
 binding.pry
 browser.close
