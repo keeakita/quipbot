@@ -18,8 +18,8 @@ A bot that plays Quiplash with Markov chains.
 
 ## Current Status
 
-All it does so far is log in and persist session. Still need to teach it how to
-play and what to say.
+The bot can join a game, post a response to a prompt (the current time), and
+vote for a random option. No support yet for games that die mid session.
 
 ## License
 
