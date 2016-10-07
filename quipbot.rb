@@ -1,5 +1,6 @@
-require 'watir'
+#!/bin/env ruby
 
+require 'watir'
 require 'pry'
 
 username = 'QUIPBOT'
