@@ -28,7 +28,7 @@ bot_threads.each_index do |i|
 
   bot_threads[i] = bot.start_playing do |prompt|
     begin
-      response = chain.gen_seeded_text(prompt, word_limit: 7)
+      response = chain.gen_seeded_text(prompt, word_limit: 7, include_seed: false)
     rescue ModelMatchError => match_err
       response = chain.gen_random_text(word_limit: 7)
     end

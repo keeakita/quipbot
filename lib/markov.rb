@@ -49,7 +49,7 @@ class MarkovChain
 
   # Generates a phrase from a seed of at most word_limit words. If no n-gram in
   # the seed can be matched with the chain, raises a ModelMatchError.
-  def gen_seeded_text(seed, word_limit: 15)
+  def gen_seeded_text(seed, word_limit: 15, include_seed: true)
     generated = nil
     matching_grams = []
 
@@ -65,7 +65,11 @@ class MarkovChain
     end
 
     # Choose a matched gram at random
-    generated = matching_grams.sample(1)[0]
+    if (include_seed)
+      generated = matching_grams.sample(1)[0]
+    else
+      generated = @grams[matching_grams.sample(1)[0]].sample(1)[0]
+    end
 
     # Generate the phrase
     current_gram = generated.clone
