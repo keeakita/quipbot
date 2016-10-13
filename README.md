@@ -9,6 +9,10 @@ A bot that plays Quiplash with Markov chains.
 - Firefox > 48
 - The beta version 6 of Watir (Bundler should take care for this for you)
 - `geckodriver` (available in the AUR)
+- Linux
+    - This uses `Xvfb` via the `headless` Gem, though you may be able to get it
+      working on Windows just by removing that part of the code and dealing with
+      all the windows that pop up
 
 ## Running
 
@@ -18,8 +22,19 @@ A bot that plays Quiplash with Markov chains.
 
 ## Current Status
 
-The bot can join a game, post a response to a prompt (the current time), and
-vote for a random option. No support yet for games that die mid session.
+The bot can:
+- Join a game
+- Read and respond to prompts using a markov chain
+- Vote for random choices
+- Resume a game if the program crashes
+- Play as multiple players (separation of sessions)
+
+Future plans:
+- "Intelligent" voting - the bot somehow uses the Markov model to determine what
+  answer it like best
+- Better error handling and cleanup. Leaves a lot of stuff lying around `/tmp/`
+  and some leftover processes on crash
+- Config files instead of embedding all that stuff in the main file
 
 ## License
 
