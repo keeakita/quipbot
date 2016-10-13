@@ -51,18 +51,21 @@ class MarkovChain
   # the seed can be matched with the chain, raises a ModelMatchError.
   def gen_seeded_text(seed, word_limit: 15)
     generated = nil
+    matching_grams = []
 
     # Look through the seed phrase and attempt to find something in the model
     seed.split(/\s+/).each_cons(NUM_GRAMS) do |words|
       if @grams.include? words
-        generated = words
-        break
+        matching_grams << words
       end
     end
 
-    if generated.nil?
+    if matching_grams.empty?
       raise ModelMatchError.new("Could not find a model match for the string: #{seed}")
     end
+
+    # Choose a matched gram at random
+    generated = matching_grams.sample(1)[0]
 
     # Generate the phrase
     current_gram = generated.clone
