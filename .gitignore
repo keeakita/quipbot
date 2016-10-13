@@ -1,1 +1,2 @@
-.game_uuid
+*.game_uuid
+*.mp.gz

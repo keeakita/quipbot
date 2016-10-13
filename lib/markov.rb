@@ -1,4 +1,5 @@
-require 'pry'
+require 'zlib'
+require 'msgpack'
 
 class ModelMatchError < StandardError
 end
@@ -6,12 +7,30 @@ end
 class MarkovChain
   NUM_GRAMS = 2 # How many words go in each slot
 
-  # Creates a new Markov chain, training it on the given file
-  def initialize(source_filename)
-    source_file = File.new(source_filename)
-
+  # Initializes a chain object, optionally loading a saved, gzip compressed,
+  # messagepack encoded model
+  def initialize(model_file=nil)
     # The model. This hash maps an array of NUM_GRAMS words to another array of
     # NUM_GRAMS words.
+    @grams = Hash.new()
+
+    unless model_file.nil?
+      packed_compressed_model = Zlib::GzipReader.open(model_file)
+      @grams = MessagePack.unpack(packed_compressed_model)
+    end
+  end
+
+  # Saves the model to a gzip compressed, messagepack encoded file
+  def save_model(model_filename)
+    file = File.new(model_filename, 'w')
+    out = Zlib::GzipWriter.new(file)
+    MessagePack.pack(@grams, out)
+    out.close
+  end
+
+  # Trains the markov chain on the given text file
+  def train_text(source_filename)
+    source_file = File.new(source_filename)
     @grams = Hash.new()
 
     source_file.each_line do |line|
@@ -28,11 +47,12 @@ class MarkovChain
     end
   end
 
-  # Generates a phrase from a seed of at most word_limit words
+  # Generates a phrase from a seed of at most word_limit words. If no n-gram in
+  # the seed can be matched with the chain, raises a ModelMatchError.
   def gen_seeded_text(seed, word_limit: 15)
-    # Look through the seed phrase and attempt to find something in the model
     generated = nil
 
+    # Look through the seed phrase and attempt to find something in the model
     seed.split(/\s+/).each_cons(NUM_GRAMS) do |words|
       if @grams.include? words
         generated = words
@@ -47,18 +67,16 @@ class MarkovChain
     # Generate the phrase
     current_gram = generated.clone
     while @grams.include?(current_gram) && generated.length < word_limit
-      current_gram = @grams[current_gram].sample(1)
+      current_gram = @grams[current_gram].sample(1)[0]
       generated = generated.concat(current_gram)
-      binding.pry
     end
 
     return generated.join(' ')
   end
-end
 
-# TODO: DEBUG CODE REMOVE THIS
-chain = MarkovChain.new 'clean_brain.txt'
-
-10.times do
-  puts chain.gen_seeded_text 'this is really good'
+  # Picks a random starting point and generates text. Unlike gen_seeded_text,
+  # this doesn't have the posibility of generating nothing.
+  def gen_random_text(word_limit: 15)
+    return gen_seeded_text(@grams.keys.sample(1)[0], word_limit)
+  end
 end

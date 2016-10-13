@@ -2,4 +2,5 @@
 source 'https://rubygems.org'
 
 gem 'watir', '>= 6.0.0.beta5'
-gem 'pry'
+gem 'msgpack'
+gem 'headless'

@@ -3,19 +3,14 @@ GEM
   specs:
     childprocess (0.5.9)
       ffi (~> 1.0, >= 1.0.11)
-    coderay (1.1.1)
     ffi (1.9.14)
-    method_source (0.8.2)
-    pry (0.10.4)
-      coderay (~> 1.1.0)
-      method_source (~> 0.8.1)
-      slop (~> 3.4)
+    headless (2.3.1)
+    msgpack (1.0.0)
     rubyzip (1.2.0)
     selenium-webdriver (3.0.0.beta4.0)
       childprocess (~> 0.5)
       rubyzip (~> 1.0)
       websocket (~> 1.0)
-    slop (3.6.0)
     watir (6.0.0.beta5)
       selenium-webdriver (>= 3.0.0.beta2.1)
     websocket (1.2.3)
@@ -24,8 +19,9 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  pry
+  headless
+  msgpack
   watir (>= 6.0.0.beta5)
 
 BUNDLED WITH
-   1.12.5
+   1.13.2

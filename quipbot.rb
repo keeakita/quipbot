@@ -1,75 +1,41 @@
 #!/bin/env ruby
 
-require 'watir'
-require 'pry'
+require_relative 'lib/markov.rb'
+require_relative 'lib/quiplash.rb'
 
-username = 'QUIPBOT'
-room = 'TYPE'
+markov_path = './e621_comments.mp.gz'
 
-browser = Watir::Browser.new :firefox
-browser.goto('http://jackbox.tv')
+# Load the markov model
+puts 'Loading Markov Chain'
+chain = MarkovChain.new markov_path
+puts 'Markov chain loaded'
 
-# Check for an existing game ID
-if File.exists?('.game_uuid')
-  game_id = File.read('.game_uuid')
-  browser.execute_script("window.localStorage.setItem('blobcast-uuid', '#{game_id}')")
-  puts browser.execute_script('return window.localStorage.getItem(\'blobcast-uuid\')')
+# Load some bot objects
+bot_threads = Array.new(4)
+bot_threads.each_index do |i|
+  # Check for an existing game ID
+  if File.exists?("#{i}.game_uuid")
+    puts 'Found previous game info, loading saved details'
+    game_id = File.read("#{i}.game_uuid")
+  end
 
-  # Oh boy, a loaded session. We saved the roomcode and username, right?
-  browser.execute_script("window.localStorage.setItem('blobcast-roomid', '#{room}')")
-  browser.execute_script("window.localStorage.setItem('blobcast-username', '#{username}')")
+  bot = Quiplash.new('BBTS', name: "Quipbot#{i}", uuid: game_id)
 
-  # Force the javascript to reload and pick up these new values
-  browser.refresh
-end
+  game_id = bot.login
+  uuid_file = File.new("#{i}.game_uuid", 'w')
+  uuid_file.write(game_id)
+  uuid_file.close
 
-browser.text_field(id: 'roomcode').set(room)
-browser.text_field(id: 'username').set(username)
-
-browser.button(id: 'button-join').click()
-
-# Pause For join
-sleep 2
-
-# Check for an error message
-title = browser.element(class: 'modal-title')
-if browser.element(class: 'modal-title').exists?
-  if title.text == 'Error'
-    error_msg = browser.element(class: 'modal-body').text
-    STDERR.puts "Could not join game: #{error_msg}"
-    browser.close
-    exit 254
+  bot_threads[i] = bot.start_playing do |prompt|
+    begin
+      response = chain.gen_seeded_text(prompt, word_limit: 7)
+    rescue ModelMatchError => match_err
+      response = chain.gen_random_text(word_limit: 7)
+    end
+    response
   end
 end
 
-# Save the UUID of the current game
-game_id = browser.execute_script('return window.localStorage.getItem(\'blobcast-uuid\')')
-uuid_file = File.new('.game_uuid', 'w')
-uuid_file.write(game_id)
-uuid_file.close
-
-# Main event loop
-while true
-
-  # Check for a prompt
-  if browser.text_field(id: 'quiplash-answer-input').present?
-    prompt = browser.element(id: 'question-text').text
-    puts "Got prompt: #{prompt}"
-
-    browser.text_field(id: 'quiplash-answer-input').set(Time.now.to_s)
-    browser.button(id: 'quiplash-submit-answer').click()
-  end
-
-  # Check for a vote
-  if browser.element(class: 'quiplash-vote-button').present?
-    elements = browser.elements(class: 'quiplash-vote-button')
-    choice = (rand * elements.length).to_i
-    puts "Voting for choice #{choice}"
-    elements[choice].click
-  end
-
-  sleep 5
+bot_threads.each do |thread|
+  thread.join
 end
-
-binding.pry
-browser.close
