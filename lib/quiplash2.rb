@@ -4,7 +4,7 @@ require 'headless'
 require_relative './jackbox.rb'
 
 # A class representing a game of Quiplash
-class Quiplash < JackboxGame
+class Quiplash2 < JackboxGame
   # Kicks off the game logic event loop. Takes a block that is passed the
   # prompt and must return a response to the prompt.
   def start_playing
@@ -23,8 +23,8 @@ class Quiplash < JackboxGame
         end
 
         # Check for a vote
-        if @browser.element(class: 'quiplash-vote-button').present?
-          elements = @browser.elements(class: 'quiplash-vote-button')
+        if @browser.element(class: 'quiplash2-vote-button').present?
+          elements = @browser.elements(class: 'quiplash2-vote-button')
           choice = (rand * elements.length).to_i
           puts "Voting for choice #{choice}"
           elements[choice].click
