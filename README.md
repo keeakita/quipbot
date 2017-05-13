@@ -6,9 +6,8 @@ A bot that plays Quiplash with Markov chains.
 
 - Ruby
     - version is in `.ruby-version`
-- Firefox > 48
-- The beta version 6 of Watir (Bundler should take care for this for you)
-- `geckodriver` (available in the AUR)
+- Google Chrome (See "Browser Notes")
+- `chromedriver` (available in the AUR)
 - Linux
     - This uses `Xvfb` via the `headless` Gem, though you may be able to get it
       working on Windows just by removing that part of the code and dealing with
@@ -39,3 +38,12 @@ Future plans:
 ## License
 
 MIT
+
+## Browser Notes
+
+Technically, this should work with any browser that supports Watir Webdriver and
+can run Jackbox. In practice, I had a lot of problems getting it working on the
+latest Firefox with `geckodriver` on Arch after a recent update, so by default
+it now uses Chrome with `chromedriver`. There's some standardization work
+underway for a browser-agnostic control protocol, so hopefully that will improve
+the situation in the future.

@@ -21,7 +21,7 @@ class Quiplash
 
     # Start the browser
     puts 'Starting browser'
-    @browser = Watir::Browser.new :firefox
+    @browser = Watir::Browser.new :chrome
     @browser.goto('http://jackbox.tv')
   end
 
