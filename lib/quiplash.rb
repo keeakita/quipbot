@@ -1,6 +1,3 @@
-require 'watir'
-require 'headless'
-
 require_relative './jackbox.rb'
 
 # A class representing a game of Quiplash

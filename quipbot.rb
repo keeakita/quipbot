@@ -1,17 +1,88 @@
 #!/bin/env ruby
 
+require 'optparse'
+
 require_relative 'lib/markov.rb'
 require_relative 'lib/quiplash.rb'
+require_relative 'lib/quiplash2.rb'
 
-markov_path = './e621_comments.mp.gz'
+GAMES = [:quiplash, :quiplash2]
+
+# Defaults
+options = {
+  game: GAMES[0],
+  model: './model.mp.gz',
+  instances: 1,
+  # room_code: must be set by an argument
+}
+
+# Parse command line arguments
+optparse = OptionParser.new do |parser|
+  parser.banner = "Usage: quibot.rb --code CODE [options]"
+
+  # Mandatory room code, can't join a game without it
+  parser.on('-cCODE', '--code=CODE',
+          'The Jackbox room code used to join the game') do |code|
+    if code.size != 4
+      raise OptionParser::InvalidOption.new('Room code must be 4 letters')
+    end
+    options[:room_code] = code.upcase
+  end
+
+  parser.on('-gGAME',
+            '--game=GAME',
+            GAMES,
+            'Which game the bot should attempt to play.',
+            "Default: #{options[:game]}",
+            "Valid choices: #{GAMES.join(' ')}") do |game|
+
+    options[:game] = game.to_sym
+  end
+
+  parser.on('-fMODEL',
+            '--file=MODEL',
+            'The model file to use for text generation') do
+    options[:model] = model
+  end
+
+  parser.on('-nINSTANCES',
+            '--number=INSTANCES',
+            Integer,
+            'How many instances of the bot to launch.',
+            'Must be between 1 and 8, inclusive.') do |instances|
+    if instances < 1 || instances > 8
+      raise OptionParser::InvalidOption.new(
+        'Number of instances must be between 1 and 8.')
+    end
+    options[:instances] = instances
+  end
+
+  parser.on('-h', '--help', 'Prints this help') do
+    puts parser
+    exit
+  end
+end
+
+begin
+  optparse.parse!
+  if options[:room_code].nil?
+    raise OptionParser::MissingArgument.new('room_code')
+  end
+rescue OptionParser::InvalidOption, OptionParser::MissingArgument
+  # Print the error and usage info, then exit with nonzero status
+  puts $!.to_s
+  puts
+  puts optparse
+  abort
+end
 
 # Load the markov model
 puts 'Loading Markov Chain'
-chain = MarkovChain.new markov_path
+chain = MarkovChain.new options[:model]
 puts 'Markov chain loaded'
 
 # Load some bot objects
-bot_threads = Array.new(4)
+bot_threads = Array.new(options[:instances])
 bot_threads.each_index do |i|
   # Check for an existing game ID
   if File.exists?("#{i}.game_uuid")
@@ -19,7 +90,16 @@ bot_threads.each_index do |i|
     game_id = File.read("#{i}.game_uuid")
   end
 
-  bot = Quiplash.new('BBTS', name: "Quipbot#{i}", uuid: game_id)
+  if options[:game] == :quiplash
+    puts "Starting game of Quiplash"
+    bot = Quiplash.new(options[:room_code], name: "Quipbot#{i}", uuid: game_id)
+  elsif options[:game] == :quiplash2
+    puts "Starting game of Quiplash 2"
+    bot = Quiplash2.new(options[:room_code], name: "Quipbot#{i}", uuid: game_id)
+  else
+    puts 'Error: requested game has no implementation yet.'
+    abort
+  end
 
   game_id = bot.login
   uuid_file = File.new("#{i}.game_uuid", 'w')
@@ -29,7 +109,7 @@ bot_threads.each_index do |i|
   bot_threads[i] = bot.start_playing do |prompt|
     begin
       response = chain.gen_seeded_text(prompt, word_limit: 7, include_seed: false)
-    rescue ModelMatchError => match_err
+    rescue ModelMatchError
       response = chain.gen_random_text(word_limit: 7)
     end
     response
