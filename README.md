@@ -47,3 +47,13 @@ latest Firefox with `geckodriver` on Arch after a recent update, so by default
 it now uses Chrome with `chromedriver`. There's some standardization work
 underway for a browser-agnostic control protocol, so hopefully that will improve
 the situation in the future.
+
+## Legal Disclaimer
+
+The legal team at my current employer is making me put this in here, in case it
+somehow wasn't obvious that no company is responsible for such a stupid and
+poorly written project:
+
+*I am providing the code in this repository to you under an open source license.
+Because this is my personal repository, the license you receive to my code is
+from me and not from my employer (Facebook).*
