@@ -10,8 +10,8 @@ class MarkovChain
   # Initializes a chain object, optionally loading a saved, gzip compressed,
   # messagepack encoded model
   def initialize(model_file=nil)
-    # The model. This hash maps an array of NUM_GRAMS words to another array of
-    # NUM_GRAMS words.
+    # The model. This hash maps a space separated string of NUM_GRAMS words to
+    # an array of space separated NUM_GRAMS words.
     @grams = Hash.new()
 
     unless model_file.nil?
@@ -38,11 +38,13 @@ class MarkovChain
       # NOTE: Sentences with less than NUM_GRAMS * 2 words will be left out of
       # the model!
       line.split(/\s+/).each_cons(NUM_GRAMS * 2) do |words|
-        if @grams[words[0..(NUM_GRAMS-1)]].nil?
-          @grams[words[0..(NUM_GRAMS-1)]] = Array.new()
+        key = words[0..(NUM_GRAMS-1)].join(' ')
+
+        if @grams[key].nil?
+          @grams[key] = Array.new
         end
 
-        @grams[words[0..(NUM_GRAMS-1)]] << words[NUM_GRAMS..-1]
+        @grams[key] << words[NUM_GRAMS..-1].join(' ')
       end
     end
   end
@@ -55,8 +57,8 @@ class MarkovChain
 
     # Look through the seed phrase and attempt to find something in the model
     seed.split(/\s+/).each_cons(NUM_GRAMS) do |words|
-      if @grams.include? words
-        matching_grams << words
+      if @grams.include? words.join(' ')
+        matching_grams << words.join(' ')
       end
     end
 
@@ -66,16 +68,16 @@ class MarkovChain
 
     # Choose a matched gram at random
     if (include_seed)
-      generated = matching_grams.sample(1)[0]
+      generated = [matching_grams.sample]
     else
-      generated = @grams[matching_grams.sample(1)[0]].sample(1)[0]
+      generated = [@grams[matching_grams.sample].sample]
     end
 
     # Generate the phrase
-    current_gram = generated.clone
-    while @grams.include?(current_gram) && generated.length < word_limit
-      current_gram = @grams[current_gram].sample(1)[0]
-      generated = generated.concat(current_gram)
+    current_gram = generated[0]
+    while @grams.include?(current_gram) && generated.length * NUM_GRAMS < word_limit
+      current_gram = @grams[current_gram].sample
+      generated << current_gram
     end
 
     return generated.join(' ')
@@ -84,6 +86,6 @@ class MarkovChain
   # Picks a random starting point and generates text. Unlike gen_seeded_text,
   # this doesn't have the posibility of generating nothing.
   def gen_random_text(word_limit: 15)
-    return gen_seeded_text(@grams.keys.sample(1)[0], word_limit)
+    return gen_seeded_text(@grams.keys.sample, word_limit: word_limit)
   end
 end
