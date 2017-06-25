@@ -1,5 +1,5 @@
 require 'watir'
-require 'headless'
+#require 'headless'
 
 class GameJoinError < StandardError
 end
@@ -14,7 +14,7 @@ class JackboxGame
   @@headless = Headless.new
   @@headless.start
 
-  def initialize(room, name: 'quipbot', uuid: nil)
+  def initialize(room, name='quipbot', uuid=nil, js_hooks=[])
     @room = room
     @username = name
     @uuid = uuid
@@ -23,9 +23,7 @@ class JackboxGame
     puts 'Starting browser'
     @browser = Watir::Browser.new :chrome
     @browser.goto('http://jackbox.tv')
-  end
 
-  def login
     # Restore the saved session, if availible
     unless @uuid.nil?
       @browser.execute_script("window.localStorage.setItem('blobcast-uuid', '#{@uuid}')")
@@ -38,6 +36,14 @@ class JackboxGame
 
     sleep 2
 
+    unless js_hooks.empty?
+      js_hooks.each do |hook|
+        @browser.execute_script(hook)
+      end
+    end
+  end
+
+  def login
     @browser.text_field(id: 'roomcode').set(@room)
     @browser.text_field(id: 'username').set(@username)
 

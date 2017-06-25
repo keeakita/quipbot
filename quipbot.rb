@@ -5,8 +5,9 @@ require 'optparse'
 require_relative 'lib/markov.rb'
 require_relative 'lib/quiplash.rb'
 require_relative 'lib/quiplash2.rb'
+require_relative 'lib/teeko.rb'
 
-GAMES = [:quiplash, :quiplash2]
+GAMES = [:quiplash, :quiplash2, :teeko]
 
 # Defaults
 options = {
@@ -92,10 +93,13 @@ bot_threads.each_index do |i|
 
   if options[:game] == :quiplash
     puts "Starting game of Quiplash"
-    bot = Quiplash.new(options[:room_code], name: "Quipbot#{i}", uuid: game_id)
+    bot = Quiplash.new(options[:room_code], "Quipbot#{i}", game_id)
   elsif options[:game] == :quiplash2
     puts "Starting game of Quiplash 2"
-    bot = Quiplash2.new(options[:room_code], name: "Quipbot#{i}", uuid: game_id)
+    bot = Quiplash2.new(options[:room_code], "Quipbot#{i}", game_id)
+  elsif options[:game] == :teeko
+    puts "Starting game of Tee K.O."
+    bot = TeeKO.new(options[:room_code], "Quipbot#{i}", game_id)
   else
     puts 'Error: requested game has no implementation yet.'
     abort
@@ -108,9 +112,9 @@ bot_threads.each_index do |i|
 
   bot_threads[i] = bot.start_playing do |prompt|
     begin
-      response = chain.gen_seeded_text(prompt, word_limit: 7, include_seed: false)
-    rescue ModelMatchError
-      response = chain.gen_random_text(word_limit: 7)
+      #response = chain.gen_seeded_text(prompt, word_limit: 7, include_seed: false)
+    #rescue ModelMatchError
+      #response = chain.gen_random_text(word_limit: 7)
     end
     response
   end

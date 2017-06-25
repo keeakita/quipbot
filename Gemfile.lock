@@ -6,6 +6,7 @@ GEM
     ffi (1.9.18)
     headless (2.3.1)
     msgpack (1.1.0)
+    rmagick (2.16.0)
     rubyzip (1.2.1)
     selenium-webdriver (3.3.0)
       childprocess (~> 0.5)
@@ -21,6 +22,7 @@ PLATFORMS
 DEPENDENCIES
   headless
   msgpack
+  rmagick
   watir (>= 6.0.0)
 
 BUNDLED WITH
