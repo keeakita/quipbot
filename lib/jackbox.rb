@@ -1,5 +1,5 @@
 require 'watir'
-#require 'headless'
+require 'headless'
 
 class GameJoinError < StandardError
 end
