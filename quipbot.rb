@@ -13,6 +13,7 @@ GAMES = [:quiplash, :quiplash2, :teeko]
 options = {
   game: GAMES[0],
   model: './model.mp.gz',
+  pic_dir: '~/Pictures',
   instances: 1,
   # room_code: must be set by an argument
 }
@@ -42,7 +43,7 @@ optparse = OptionParser.new do |parser|
 
   parser.on('-fMODEL',
             '--file=MODEL',
-            'The model file to use for text generation') do
+            'The model file to use for text generation') do |model|
     options[:model] = model
   end
 
@@ -56,6 +57,18 @@ optparse = OptionParser.new do |parser|
         'Number of instances must be between 1 and 8.')
     end
     options[:instances] = instances
+  end
+
+  parser.on('-pPICTURE_DIR',
+            '--picture-dir=PICTURE_DIR',
+            String,
+            'Picture directory to use for Tee K.O.',
+            'Default is ~/Pictures/.') do |pic_dir|
+    unless File.directory? pic_dir
+      raise OptionParser::InvalidOption.new(
+        'Specified picture directory does not appear to be a directory.')
+    end
+    options[:pic_dir] = pic_dir
   end
 
   parser.on('-h', '--help', 'Prints this help') do
@@ -99,7 +112,7 @@ bot_threads.each_index do |i|
     bot = Quiplash2.new(options[:room_code], "Quipbot#{i}", game_id)
   elsif options[:game] == :teeko
     puts "Starting game of Tee K.O."
-    bot = TeeKO.new(options[:room_code], "Quipbot#{i}", game_id)
+    bot = TeeKO.new(options[:room_code], "Quipbot#{i}", game_id, options[:pic_dir])
   else
     puts 'Error: requested game has no implementation yet.'
     abort
@@ -110,13 +123,19 @@ bot_threads.each_index do |i|
   uuid_file.write(game_id)
   uuid_file.close
 
-  bot_threads[i] = bot.start_playing do |prompt|
-    begin
-      #response = chain.gen_seeded_text(prompt, word_limit: 7, include_seed: false)
-    #rescue ModelMatchError
-      #response = chain.gen_random_text(word_limit: 7)
+  if options[:game] == :teeko
+    bot_threads[i] = bot.start_playing do |prompt|
+      chain.gen_random_text(word_limit: 5)
     end
-    response
+  else
+    bot_threads[i] = bot.start_playing do |prompt|
+      begin
+        response = chain.gen_seeded_text(prompt, word_limit: 7, include_seed: false)
+      rescue ModelMatchError
+        response = chain.gen_random_text(word_limit: 7)
+      end
+      response
+    end
   end
 end
 

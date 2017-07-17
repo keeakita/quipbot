@@ -1,2 +1,4 @@
 *.game_uuid
 *.mp.gz
+*.txt
+backup/

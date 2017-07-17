@@ -51,8 +51,6 @@ class Drawing
 
     image.each_pixel do |pixel, column, row|
       color = pixel.to_color(Magick::SVGCompliance, false, 8, true)
-      puts "#{color}, #{row}, #{column}"
-      puts "#{current_line.inspect}"
 
       # Current line ends when we're at the final column or the color changes
       if pixel != last_pixel && column != 0
