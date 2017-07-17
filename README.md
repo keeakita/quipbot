@@ -1,6 +1,6 @@
 # QuipBot
 
-A bot that plays Quiplash with Markov chains.
+A bot that plays Quiplash, Quiplash2 and Tee K.O. with Markov chains.
 
 ## Requirements
 
