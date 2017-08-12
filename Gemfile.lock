@@ -1,20 +1,18 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    childprocess (0.6.3)
+    childprocess (0.7.1)
       ffi (~> 1.0, >= 1.0.11)
     ffi (1.9.18)
     headless (2.3.1)
     msgpack (1.1.0)
     rmagick (2.16.0)
     rubyzip (1.2.1)
-    selenium-webdriver (3.3.0)
+    selenium-webdriver (3.4.4)
       childprocess (~> 0.5)
       rubyzip (~> 1.0)
-      websocket (~> 1.0)
-    watir (6.2.1)
-      selenium-webdriver (~> 3.0)
-    websocket (1.2.4)
+    watir (6.6.0)
+      selenium-webdriver (~> 3.4, >= 3.4.1)
 
 PLATFORMS
   ruby
