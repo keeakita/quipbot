@@ -2,3 +2,4 @@
 *.mp.gz
 *.txt
 backup/
+secrets.yaml
