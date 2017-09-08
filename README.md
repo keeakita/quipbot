@@ -13,11 +13,31 @@ A bot that plays Quiplash, Quiplash2 and Tee K.O. with Markov chains.
       working on Windows just by removing that part of the code and dealing with
       all the windows that pop up
 
+## Generating the model
+
+Ideally, you want a source file where:
+- Each line is a full single sentence with no blanks
+- Lines are separated by a newline (\n)
+- There are no strange characters (things far outside ASCII, it's up to you to
+  figure out what you want)
+
+I've included a script `./generate_mode.rb` that attempts to do some quick,
+naive processing, but if you have the technical know-how, you're probably best
+off coming up with the sed/awk commands yourself that best transform your
+particular data source.
+
+Sample usage:
+```
+./generate_model.rb don_quixote.txt`
+```
+
+This will produce the file `model.mp.gz` in the current directory.
+
 ## Running
 
 1. Install the prereqs above
 2. `bundle install`
-3. `bundle exec ./quipbot.rb`
+3. `bundle exec ./quipbot.rb -h` to see usage information
 
 ## Current Status
 
@@ -31,9 +51,6 @@ The bot can:
 Future plans:
 - "Intelligent" voting - the bot somehow uses the Markov model to determine what
   answer it like best
-- Better error handling and cleanup. Leaves a lot of stuff lying around `/tmp/`
-  and some leftover processes on crash
-- Config files instead of embedding all that stuff in the main file
 
 ## License
 
