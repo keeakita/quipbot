@@ -5,7 +5,6 @@ require 'rmagick'
 # connected points.
 class Drawing
   MSG_PREFIX = '5:::'
-  APP_ID = 'c531ca944bf9762cd63a032d87cb96e7'
 
   IMAGE_HEIGHT = 75
   IMAGE_WIDTH = 75
@@ -19,10 +18,41 @@ class Drawing
 
   COLOR_DEPTH = 16
 
+  IMAGE_EXTS = %w{.jpg .jpeg .png .gif .webp}
+
   def initialize()
     @lines = []
     @background = '#000000'
   end
+
+  def self.find_images(path)
+    candidates = []
+    Find.find(path) do |subpath|
+      ending_matches = IMAGE_EXTS.any? do |ext|
+        subpath.end_with?(ext)
+      end
+
+      if !FileTest.directory?(subpath) && ending_matches
+        begin
+          image = Magick::ImageList.new(subpath)[0]
+
+          if image.opaque?
+            candidates << subpath
+          end
+        rescue Magick::ImageMagickError
+          Find.prune()
+        end
+
+        # Free memory
+        if image && !image.destroyed?
+          image.destroy!
+        end
+      end
+    end
+
+    return candidates
+  end
+
 
   def load_image(filepath)
     # TODO: strip opacity
@@ -86,20 +116,37 @@ class Drawing
   end
 
   # Converts the drawing into the format used by Jackbox.
-  def to_message(code, uuid)
-    return MSG_PREFIX + JSON.generate({
-      "name": "msg",
-      "args": [{
-        "roomId": code,
-        "userId": uuid,
-        "message": {
-          "pictureLines": @lines,
-          "background": @background,
+  def to_message(
+    code,
+    uuid,
+    appid,
+    message_key='pictureLines',
+    include_bg=true,
+    playerpic=false
+  )
+    msg_obj = {
+      "name" => "msg",
+      "args" => [{
+        "roomId" => code,
+        "userId" => uuid,
+        "message" => {
+          message_key => @lines,
         },
-        "type": "Action",
-        "appId": APP_ID,
-        "action": "SendMessageToRoomOwner",
-      }]})
+        "type" => "Action",
+        "appId" => appid,
+        "action" => "SendMessageToRoomOwner",
+      }]
+    }
+
+    if include_bg
+      msg_obj['args'][0]['message']['background'] = @background
+    end
+
+    if playerpic
+      msg_obj['args'][0]['message']['setPlayerPicture'] = true
+    end
+
+    return MSG_PREFIX + JSON.generate(msg_obj)
   end
 
   def valid?

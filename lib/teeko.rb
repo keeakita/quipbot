@@ -5,8 +5,9 @@ require_relative './drawing.rb'
 
 # A class representing a game of Tee K.O
 class TeeKO < JackboxGame
-  IMAGE_EXTS = %w{.jpg .jpeg .png .gif .webp}
   TITLE_ENTRIES = 4
+
+  @@appid = 'c531ca944bf9762cd63a032d87cb96e7'
 
   def _handle_title_entry(browser)
     begin
@@ -44,37 +45,9 @@ class TeeKO < JackboxGame
       "}",
     ])
 
-    @image_list = _find_images(imagepath).shuffle
+    @image_list = Drawing.find_images(imagepath).shuffle
 
     super(room, name, uuid, js_hooks)
-  end
-
-  def _find_images(path)
-    candidates = []
-    Find.find(path) do |subpath|
-      ending_matches = IMAGE_EXTS.any? do |ext|
-        subpath.end_with?(ext)
-      end
-
-      if !FileTest.directory?(subpath) && ending_matches
-        begin
-          image = Magick::ImageList.new(subpath)[0]
-
-          if image.opaque?
-            candidates << subpath
-          end
-        rescue Magick::ImageMagickError
-          Find.prune()
-        end
-
-        # Free memory
-        if image && !image.destroyed?
-          image.destroy!
-        end
-      end
-    end
-
-    return candidates
   end
 
   # Kicks off the game logic event loop.
@@ -154,7 +127,7 @@ class TeeKO < JackboxGame
   end
 
   def _send_drawing(drawing)
-    message = drawing.to_message(@room, @uuid)
+    message = drawing.to_message(@room, @uuid, @@appid)
     @browser.execute_script("console.log('#{message}');")
     @browser.execute_script("window.__socketList[0].send('#{message}');")
   end

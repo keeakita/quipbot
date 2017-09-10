@@ -6,14 +6,16 @@ require_relative 'lib/markov.rb'
 require_relative 'lib/quiplash.rb'
 require_relative 'lib/quiplash2.rb'
 require_relative 'lib/teeko.rb'
+require_relative 'lib/drawful2.rb'
 
-GAMES = [:quiplash, :quiplash2, :teeko]
+GAMES = [:quiplash, :quiplash2, :teeko, :drawful2]
 
 # Defaults
 options = {
   game: GAMES[0],
   model: './model.mp.gz',
   pic_dir: '~/Pictures',
+  e9_icon: false,
   instances: 1,
   # room_code: must be set by an argument
 }
@@ -62,13 +64,19 @@ optparse = OptionParser.new do |parser|
   parser.on('-pPICTURE_DIR',
             '--picture-dir=PICTURE_DIR',
             String,
-            'Picture directory to use for Tee K.O.',
+            'Picture directory to use for Tee K.O. shirts and Drawful icons',
             'Default is ~/Pictures/.') do |pic_dir|
     unless File.directory? pic_dir
       raise OptionParser::InvalidOption.new(
         'Specified picture directory does not appear to be a directory.')
     end
     options[:pic_dir] = pic_dir
+  end
+
+  parser.on('-e',
+            '--e926-icon',
+            'Try to load an image from E926 for the Drawful icon') do |use_e9|
+    options[:e9_icon] = use_e9
   end
 
   parser.on('-h', '--help', 'Prints this help') do
@@ -90,11 +98,6 @@ rescue OptionParser::InvalidOption, OptionParser::MissingArgument
   abort
 end
 
-# Load the markov model
-puts 'Loading Markov Chain'
-chain = MarkovChain.new options[:model]
-puts 'Markov chain loaded'
-
 # Load some bot objects
 bot_threads = Array.new(options[:instances])
 bot_threads.each_index do |i|
@@ -105,14 +108,28 @@ bot_threads.each_index do |i|
   end
 
   if options[:game] == :quiplash
-    puts "Starting game of Quiplash"
+    puts 'Starting game of Quiplash'
     bot = Quiplash.new(options[:room_code], "Quipbot#{i}", game_id)
   elsif options[:game] == :quiplash2
-    puts "Starting game of Quiplash 2"
+    puts 'Starting game of Quiplash 2'
     bot = Quiplash2.new(options[:room_code], "Quipbot#{i}", game_id)
   elsif options[:game] == :teeko
-    puts "Starting game of Tee K.O."
-    bot = TeeKO.new(options[:room_code], "Quipbot#{i}", game_id, options[:pic_dir])
+    puts 'Starting game of Tee K.O.'
+    bot = TeeKO.new(
+      options[:room_code],
+      "Quipbot#{i}",
+      game_id,
+      options[:pic_dir]
+    )
+  elsif options[:game] == :drawful2
+    puts 'Starting game of Drawful 2'
+    bot = Drawful2.new(
+      options[:room_code],
+      "Quipbot#{i}",
+      game_id,
+      options[:pic_dir],
+      options[:e9_icon],
+    )
   else
     puts 'Error: requested game has no implementation yet.'
     abort
@@ -123,9 +140,18 @@ bot_threads.each_index do |i|
   uuid_file.write(game_id)
   uuid_file.close
 
+  # Load the markov model
+  puts 'Loading Markov Chain'
+  chain = MarkovChain.new options[:model]
+  puts 'Markov chain loaded'
+
   if options[:game] == :teeko
     bot_threads[i] = bot.start_playing do |prompt|
       chain.gen_random_text(word_limit: 5)
+    end
+  elsif options[:game] == :drawful2
+    bot_threads[i] = bot.start_playing do |prompt|
+      chain.gen_random_text(word_limit: 3)
     end
   else
     bot_threads[i] = bot.start_playing do |prompt|
