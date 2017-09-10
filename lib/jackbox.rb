@@ -41,6 +41,8 @@ class JackboxGame
         @browser.execute_script(hook)
       end
     end
+
+    return @uuid
   end
 
   def login
