@@ -3,5 +3,4 @@ source 'https://rubygems.org'
 
 gem 'watir', '>= 6.0.0'
 gem 'msgpack'
-gem 'headless'
 gem 'rmagick'
