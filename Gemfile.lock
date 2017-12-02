@@ -18,7 +18,6 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  headless
   msgpack
   rmagick
   watir (>= 6.0.0)
