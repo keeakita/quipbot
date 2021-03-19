@@ -14,7 +14,7 @@ GAMES = [:quiplash, :quiplash2, :teeko, :drawful2]
 options = {
   game: GAMES[0],
   model: './model.mp.gz',
-  pic_dir: '~/Pictures',
+  pic_dir: File.join(ENV['HOME'], 'Pictures'),
   e9_icon: false,
   instances: 1,
   # room_code: must be set by an argument
