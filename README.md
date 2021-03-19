@@ -1,5 +1,7 @@
 # QuipBot
 
+NOTICE: This repository is no longer maintained. Use at your own risk!
+
 A bot that plays Quiplash, Quiplash2 and Tee K.O. with Markov chains.
 
 ## Requirements
