@@ -1,27 +1,27 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    childprocess (0.7.1)
-      ffi (~> 1.0, >= 1.0.11)
-    ffi (1.9.18)
+    childprocess (3.0.0)
     headless (2.3.1)
-    msgpack (1.1.0)
-    rmagick (2.16.0)
-    rubyzip (1.2.1)
-    selenium-webdriver (3.4.4)
-      childprocess (~> 0.5)
-      rubyzip (~> 1.0)
-    watir (6.6.0)
-      selenium-webdriver (~> 3.4, >= 3.4.1)
+    msgpack (1.4.2)
+    regexp_parser (2.1.1)
+    rmagick (4.2.2)
+    rubyzip (2.3.0)
+    selenium-webdriver (3.142.7)
+      childprocess (>= 0.5, < 4.0)
+      rubyzip (>= 1.2.2)
+    watir (6.19.1)
+      regexp_parser (>= 1.2, < 3)
+      selenium-webdriver (>= 3.142.7)
 
 PLATFORMS
-  ruby
+  x86_64-linux
 
 DEPENDENCIES
   headless
   msgpack
   rmagick
-  watir (>= 6.0.0)
+  watir (~> 6.19.1)
 
 BUNDLED WITH
-   1.14.6
+   2.2.14
